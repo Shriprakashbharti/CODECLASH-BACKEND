@@ -1,27 +1,34 @@
 const { spawn } = require("child_process");
 const path = require("path");
+const fs = require("fs");
 
 exports.processImage = (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: "No image uploaded" });
     }
 
-    const imagePath = path.join(__dirname, "../uploads", req.file.filename);
-    const pythonPath = "C:\\Program Files\\Python310\\python.exe";  // Change this if needed
-    const outputPath = path.join(__dirname, "../uploads/DetectedOutput/detected_output.jpg");
-    const pythonProcess = spawn(pythonPath, ["ai/detect.py", imagePath]);
+    // Save the uploaded file in `/tmp/` (temporary directory)
+    const imagePath = `/tmp/${Date.now()}_${req.file.originalname}`;
+    fs.writeFileSync(imagePath, req.file.buffer);
+    console.log("Image saved at:", imagePath);
+
+    //  Output path (You might not need this for detection)
+    const outputPath = `/tmp/detected_output.jpg`;
+
+    //  Run the Python script with the correct file path
+    const pythonProcess = spawn("python3", ["ai/detect.py", imagePath]);
 
     let result = "";
     let errorOutput = "";
 
     pythonProcess.stdout.on("data", (data) => {
         const text = data.toString().trim();
-        console.log("Detected Output:", text);  // Log for debugging
+        console.log("Detected Output:", text);  
 
-        // Only store valid JSON lines
+        // Store only valid JSON lines
         if (text.startsWith("{") || text.startsWith("[")) {
             result += text;
-            console.log("Result : ",result);
+            console.log("Result:", result);
         }
     });
 
@@ -46,10 +53,12 @@ exports.processImage = (req, res) => {
             if (parseResult.length === 0) {
                 console.log("No objects detected.");
             }
+
+            // ✅ Return image URL pointing to `/tmp/`
             res.json({ 
                 parseResult,
-                imageUrl:"http://localhost:5000/uploads/DetectedOutput/detected_output.jpg" 
-             });
+                imageUrl: `http://localhost:5000/tmp/detected_output.jpg` 
+            });
              
         } catch (error) {
             console.error("JSON Parsing Error:", error.message);
@@ -57,4 +66,3 @@ exports.processImage = (req, res) => {
         }
     });
 };
-
