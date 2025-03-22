@@ -1,2 +1,5 @@
-pip3 install -r requirements.txt
-
+numpy
+opencv-python
+ultralytics
+flask
+gunicorn
