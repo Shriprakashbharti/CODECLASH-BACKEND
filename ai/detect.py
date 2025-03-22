@@ -26,7 +26,8 @@ model = YOLO("models/yolov8m.pt")
 
 image_path = sys.argv[1]
 
-output_dir = "/tmp/"
+# ✅ Save output in a persistent directory (`/uploads/`)
+output_dir = os.path.join(os.path.dirname(__file__), "..", "uploads")
 os.makedirs(output_dir, exist_ok=True)
 
 enhanced_image_path = os.path.join(output_dir, "enhanced_image.jpg")
@@ -61,9 +62,10 @@ for r in results:
 
 cv2.imwrite(detected_image_path, image)
 
+# ✅ Return a URL that actually works (no `/tmp/`)
 print(json.dumps({
     "detections": detections,
-    "imageUrl": f"https://object-detection-tbc1.onrender.com/tmp/detected_output.jpg"
+    "imageUrl": f"https://object-detection-tbc1.onrender.com/uploads/detected_output.jpg"
 }, indent=2))
 sys.stdout.flush()
 sys.exit(0)
