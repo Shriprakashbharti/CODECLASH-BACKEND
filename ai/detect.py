@@ -49,7 +49,6 @@ os.makedirs(output_dir, exist_ok=True)
 enhanced_image_path = os.path.join(output_dir, "enhanced_image.jpg")
 detected_image_path = os.path.join(output_dir, "detected_output.jpg")
 >>>>>>> 2571d53dc88607dda2de3781a337b9241b2dbbdd
-
 image = enhance_image(image_path)
 
 cv2.imwrite(enhanced_image_path, image)

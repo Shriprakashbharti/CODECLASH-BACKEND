@@ -14,7 +14,7 @@ model = YOLO("models/yolov8m.pt")
 client = MongoClient("mongodb://localhost:27017/")
 db = client["BlindSpotDetection"]
 detections_collection = db["Detections"]
-
+live_detection_bp = Blueprint("live_detection", __name__)
 # Ensure output directory exists
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads", "DetectedOutput")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -135,3 +135,14 @@ def get_risk_level():
     """Returns the current risk level as JSON."""
     global risk_level
     return jsonify({"risk_level": risk_level})
+
+@cross_origin() 
+def get_past_detections():
+    """Fetch past detections from MongoDB."""
+    past_detections = list(detections_collection.find().sort("timestamp", -1).limit(10))
+    
+    for detection in past_detections:
+        detection["_id"] = str(detection["_id"])
+        detection["timestamp"] = detection["timestamp"].isoformat()
+
+    return jsonify({"past_detections": past_detections})
