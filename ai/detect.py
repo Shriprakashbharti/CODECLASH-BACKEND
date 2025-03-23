@@ -32,14 +32,14 @@ image_path = sys.argv[1]
 image = enhance_image(image_path)
 
 
-# output_dir =r"\Users\jaypr\OneDrive\Desktop\CODECLASH\backend\uploads\DetectedOutput"
-output_dir =r"\uploads\DetectedOutput"
+output_dir =r"\Users\jaypr\OneDrive\Desktop\CODECLASH\backend\uploads\DetectedOutput"
+# output_dir =r"\uploads\DetectedOutput"
 os.makedirs(output_dir, exist_ok=True)
 
 output_paths = os.path.join(output_dir, "detected_output.jpg")
 # Save enhanced image for reference
-# enhance_dir=r"\Users\jaypr\OneDrive\Desktop\CODECLASH\backend\uploads\enhance"
-enhance_dir=r"\uploads\enhance"
+enhance_dir=r"\Users\jaypr\OneDrive\Desktop\CODECLASH\backend\uploads\enhance"
+# enhance_dir=r"\uploads\enhance"
 os.makedirs(enhance_dir, exist_ok=True)
 output_path = os.path.join(enhance_dir, "enhanced_test.jpg")
 
@@ -82,7 +82,7 @@ cv2.destroyAllWindows()
 # Output detection results in JSON format
 print(json.dumps({
     "detections": detections,
-    "imageUrl": f"http://localhost:5000/uploads/DetectedOutput/detected_output.jpg"
+    "imageUrl": f"http://localhost:5000/uploads/DtectedOutput/detected_output.jpg"
 }, indent=2))
 sys.stdout.flush()
 sys.exit(0)
