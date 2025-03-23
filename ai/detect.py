@@ -26,35 +26,28 @@ model = YOLO("models/yolov8m.pt")
 
 image_path = sys.argv[1]
 
-<<<<<<< HEAD
-# Enhance the image for foggy conditions
 image = enhance_image(image_path)
 
 
-output_dir =r"\Users\jaypr\OneDrive\Desktop\CODECLASH\backend\uploads\DetectedOutput"
-# output_dir =r"\uploads\DetectedOutput"
+output_dir = os.path.join(os.getcwd(), "uploads", "DetectedOutput")
 os.makedirs(output_dir, exist_ok=True)
 
 output_paths = os.path.join(output_dir, "detected_output.jpg")
-# Save enhanced image for reference
-enhance_dir=r"\Users\jaypr\OneDrive\Desktop\CODECLASH\backend\uploads\enhance"
-# enhance_dir=r"\uploads\enhance"
+
+enhance_dir = os.path.join(os.getcwd(), "uploads", "enhance")
 os.makedirs(enhance_dir, exist_ok=True)
 output_path = os.path.join(enhance_dir, "enhanced_test.jpg")
-=======
-# ✅ Save output in a persistent directory (`/uploads/`)
+
 output_dir = os.path.join(os.path.dirname(__file__), "..", "uploads")
 os.makedirs(output_dir, exist_ok=True)
 
 enhanced_image_path = os.path.join(output_dir, "enhanced_image.jpg")
 detected_image_path = os.path.join(output_dir, "detected_output.jpg")
->>>>>>> 2571d53dc88607dda2de3781a337b9241b2dbbdd
 image = enhance_image(image_path)
 
 cv2.imwrite(enhanced_image_path, image)
 
-# Perform object detection with lower confidence threshold
-results = model(image, conf=0.25)  # Reduce confidence for foggy conditions
+results = model(image, conf=0.25) 
 
 detections = []
 for r in results:
@@ -78,14 +71,10 @@ for r in results:
 
 cv2.imwrite(detected_image_path, image)
 
-# ✅ Return a URL that actually works (no `/tmp/`)
 print(json.dumps({
     "detections": detections,
-<<<<<<< HEAD
-    "imageUrl": f"http://localhost:5000/uploads/DtectedOutput/detected_output.jpg"
-=======
-    "imageUrl": f"https://object-detection-tbc1.onrender.com/uploads/detected_output.jpg"
->>>>>>> 2571d53dc88607dda2de3781a337b9241b2dbbdd
+    "imageUrl": f"http://localhost:4000/uploads/detected_output.jpg",
+    "imageUrl": f"https://localhost:4000/uploads/enhanced_image.jpg"
 }, indent=2))
 sys.stdout.flush()
 sys.exit(0)

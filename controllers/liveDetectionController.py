@@ -15,6 +15,7 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["BlindSpotDetection"]
 detections_collection = db["Detections"]
 live_detection_bp = Blueprint("live_detection", __name__)
+
 # Ensure output directory exists
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads", "DetectedOutput")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -25,8 +26,7 @@ risk_level = 0
 def add_fog_effect(image, intensity=0.5):
     """Simulate foggy conditions by blending the image with a white overlay."""
     fog = np.full_like(image, 255, dtype=np.uint8)  
-    foggy_image = cv2.addWeighted(image, 1 - intensity, fog, intensity, 0)
-    return foggy_image
+    return cv2.addWeighted(image, 1 - intensity, fog, intensity, 0)
 
 def add_motion_blur(image, kernel_size=5):
     """Apply motion blur to simulate rainy conditions."""
@@ -39,18 +39,12 @@ def enhance_image(image):
     """Apply CLAHE contrast enhancement and add fog/rain simulation."""
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
-
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
     l = clahe.apply(l)
-
     enhanced_lab = cv2.merge((l, a, b))
     enhanced_image = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
-
-    # Apply fog and rain effects randomly
     enhanced_image = add_fog_effect(enhanced_image, intensity=0.3)
-    enhanced_image = add_motion_blur(enhanced_image, kernel_size=3)
-
-    return enhanced_image
+    return add_motion_blur(enhanced_image, kernel_size=3)
 
 def calculate_risk(detections):
     """Calculates risk level based on object size, distance, and speed."""
@@ -58,32 +52,26 @@ def calculate_risk(detections):
     for obj in detections:
         confidence = obj["confidence"]
         distance = obj["distance"]  
-
-        # Increase risk if object is close and moving fast
         if distance < 1.5 and confidence > 0.5:
             risk_level = max(risk_level, 2)  # High risk
         elif distance < 3.0:
             risk_level = max(risk_level, 1)  # Medium risk
-
     return risk_level
 
 def generate_frames():
     """Continuously capture frames, process, and return as MJPEG stream."""
     global risk_level  
-
     camera = cv2.VideoCapture(0)  
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     camera.set(cv2.CAP_PROP_FPS, 10)
-
+    
     while True:
         success, frame = camera.read()
         if not success:
             break
-
-        enhanced_frame = enhance_image(frame)
         
-        # Perform object detection
+        enhanced_frame = enhance_image(frame)
         results = model(enhanced_frame, conf=0.3)
 
         detections = []
@@ -91,38 +79,37 @@ def generate_frames():
             for box in r.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 confidence = float(box.conf[0])
+                class_id = int(box.cls[0])
+                class_name = model.names[class_id]  # Get object name
 
-                # Estimate distance (basic estimation)
                 distance = max(0.5, 5 - (x2 - x1) / 50)
 
                 detections.append({
+                    "object_name": class_name,
                     "x1": x1, "y1": y1, "x2": x2, "y2": y2,
                     "confidence": confidence, "distance": distance
                 })
 
-                # Draw bounding box
                 color = (0, 255, 0) if distance > 3 else (0, 0, 255)
                 cv2.rectangle(enhanced_frame, (x1, y1), (x2, y2), color, 2)
-
-        # Calculate risk level
+                cv2.putText(enhanced_frame, f"{class_name} ({confidence:.2f})", 
+                            (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        
         risk_level = calculate_risk(detections)
 
-        # Save detection data to MongoDB
         detections_collection.insert_one({
             "timestamp": datetime.datetime.utcnow(),
             "detections": detections,
             "risk_level": risk_level
         })
 
-        # Save the latest frame
         output_path = os.path.join(UPLOAD_FOLDER, "live_detected.jpg")
         cv2.imwrite(output_path, enhanced_frame)
 
-        # Convert frame to JPEG
         _, buffer = cv2.imencode('.jpg', enhanced_frame)
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-
+    
     camera.release()
 
 @cross_origin() 
@@ -132,9 +119,16 @@ def live_detection_feed():
 
 @cross_origin() 
 def get_risk_level():
-    """Returns the current risk level as JSON."""
+    """Returns the current risk level and detected objects as JSON."""
     global risk_level
-    return jsonify({"risk_level": risk_level})
+    latest_detection = detections_collection.find_one(sort=[("timestamp", -1)])
+    
+    detected_objects = [obj["object_name"] for obj in latest_detection["detections"]] if latest_detection else []
+    
+    return jsonify({
+        "risk_level": risk_level,
+        "detected_objects": detected_objects
+    })
 
 @cross_origin() 
 def get_past_detections():
@@ -144,5 +138,5 @@ def get_past_detections():
     for detection in past_detections:
         detection["_id"] = str(detection["_id"])
         detection["timestamp"] = detection["timestamp"].isoformat()
-
+    
     return jsonify({"past_detections": past_detections})

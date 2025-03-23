@@ -7,7 +7,7 @@ const app = express();
 
 
 app.use(cors({
-    origin: "https://blind-spot-detection.vercel.app",
+    origin: "http://localhost:4000/",
     methods: "GET,POST,PUT,DELETE",
     allowedHeaders: "Content-Type,Authorization"
 }));
