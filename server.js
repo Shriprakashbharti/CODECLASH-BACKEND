@@ -5,11 +5,18 @@ const detectRoutes = require("./routes/detectRoutes");
 const path = require("path");
 const app = express();
 
+
+app.use(cors({
+    origin: "https://blind-spot-detection.vercel.app",
+    methods: "GET,POST,PUT,DELETE",
+    allowedHeaders: "Content-Type,Authorization"
+}));
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.urlencoded({ extended: true }));
 
 
 app.use((req, res, next) => {
