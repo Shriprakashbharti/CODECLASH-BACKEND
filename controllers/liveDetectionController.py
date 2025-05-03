@@ -10,8 +10,8 @@ from ultralytics import YOLO
 # Load YOLO model
 model = YOLO("models/yolov8m.pt")
 
-# MongoDB Setup
-client = MongoClient("mongodb://localhost:27017/")
+# MongoDB Setup  
+client = MongoClient("mongodb+srv://bhartikeshav527:BRu1NlCcCVX5FkbC@cluster0.fcfycyu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 db = client["BlindSpotDetection"]
 detections_collection = db["Detections"]
 live_detection_bp = Blueprint("live_detection", __name__)

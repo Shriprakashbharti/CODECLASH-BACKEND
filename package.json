@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
   "start": "node server.js & python app.py & wait",
-  "postinstall": "pip3 install -r requirements.txt"
+  "postinstall": "pip install -r requirements.txt"
 },
   "keywords": [],
   "author": "",

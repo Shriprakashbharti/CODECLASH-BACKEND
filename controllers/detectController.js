@@ -48,7 +48,7 @@ exports.processImage = (req, res) => {
             }
             res.json({ 
                 parseResult,
-                imageUrl:"http://localhost:4000/uploads/detected_output.jpg" 
+                imageUrl:"https://blind-spot-detection.onrender.com/uploads/detected_output.jpg" 
              });
              
         } catch (error) {
