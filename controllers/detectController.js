@@ -7,7 +7,9 @@ exports.processImage = (req, res) => {
     }
 
     const imagePath = path.join(__dirname, "../uploads", req.file.filename);
-    const pythonPath = "C:\\Program Files\\Python310\\python.exe";  // Change this if needed
+    const pythonPath = process.platform === 'win32' 
+  ? 'C:\\Program Files\\Python310\\python.exe'
+  : 'python3';  // Change this if needed
     const outputPath = path.join(__dirname, "../uploads/DetectedOutput/detected_output.jpg");
     const pythonProcess = spawn(pythonPath, ["ai/detect.py", imagePath]);
 
