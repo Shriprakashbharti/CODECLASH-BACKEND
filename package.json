@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
   "start": "node server.js & python app.py & wait",
-  "postinstall": "npm install && apt-get update && apt-get install -y python3 python3-pip -r requirements.txt"
+  "postinstall": "apt-get update && apt-get install -y python3 python3-pip -r requirements.txt"
 },
   "keywords": [],
   "author": "",
