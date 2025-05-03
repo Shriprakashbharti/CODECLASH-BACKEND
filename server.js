@@ -7,12 +7,12 @@ const app = express();
 
 
 app.use(cors({
-    origin:"https://blind-spot-detections.vercel.app/",
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type,Authorization"
+    origin:'https://blind-spot-detections.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: "Content-Type,Authorization",
+    credentials:true
 }));
 // Middleware
-app.use(cors());
 app.use(express.json());
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
