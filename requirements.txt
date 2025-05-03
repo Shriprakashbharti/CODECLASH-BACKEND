@@ -3,6 +3,5 @@ opencv-python
 ultralytics
 flask
 gunicorn
-flask-cors
 pymongo>=4.0
 flask-cors>=3.0.10
